@@ -51,10 +51,9 @@ const BANK = {
 };
 
 const MAPS_EMBED =
-  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3342.7!2d-71.2!3d-32.78!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzLCsDQ2JzQ4LjAiUyA3McKwMTInMDAuMCJX!5e0!3m2!1ses!2scl!4v1";
+  "https://www.google.com/maps?q=Carrera+444,La+Calera,Chile&output=embed";
 const MAPS_ROUTE =
-  "https://www.google.com/maps/dir/?api=1&destination=-32.78,-71.2";
-const GMAPS_PIN = "https://maps.google.com/?q=-32.78,-71.2";
+  "https://www.google.com/maps/dir/?api=1&destination=Carrera+444,La+Calera,Chile";
 
 const CATEGORIES = [
   {
