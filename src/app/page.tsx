@@ -767,40 +767,157 @@ function QRCodeWithLogo({ url }: { url: string }) {
     const generateQR = async () => {
       try {
         const QRCode = (await import("qrcode")).default;
-        const canvas = document.createElement("canvas");
-        await QRCode.toCanvas(canvas, url, {
-          width: 280,
-          margin: 1,
-          color: {
-            dark: "#1a1a1a",
-            light: "#ffffff",
-          },
-          errorCorrectionLevel: "H",
-        });
 
-        // Draw logo in center
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          const logo = new Image();
-          logo.crossOrigin = "anonymous";
-          logo.src = "/images/logo-optimized.png";
-          logo.onload = () => {
-            const size = 50;
-            const x = (canvas.width - size) / 2;
-            const y = (canvas.height - size) / 2;
-            // White background for logo
-            ctx.fillStyle = "white";
-            ctx.beginPath();
-            ctx.roundRect(x - 4, y - 4, size + 8, size + 8, 6);
-            ctx.fill();
-            ctx.drawImage(logo, x, y, size, size);
-            setQrDataUrl(canvas.toDataURL("image/png"));
-          };
-          // Fallback if image doesn't load
-          logo.onerror = () => {
-            setQrDataUrl(canvas.toDataURL("image/png"));
-          };
+        // Generate raw QR matrix
+        const qr = QRCode.create(url, { errorCorrectionLevel: "H" });
+        const modules = qr.modules;
+        const size = modules.size;
+        const data = modules.data;
+
+        const scale = 12;
+        const margin = 24;
+        const totalSize = size * scale + margin * 2;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = totalSize;
+        canvas.height = totalSize;
+        const ctx = canvas.getContext("2d")!;
+
+        // White background with subtle rounded rect
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.roundRect(0, 0, totalSize, totalSize, 20);
+        ctx.fill();
+
+        // Branding colors
+        const rosegRed = "#C41E2A";
+        const rosegRedDark = "#9B1620";
+        const rosegGray = "#4A4A4A";
+
+        // Create gradient for modules
+        const gradient = ctx.createLinearGradient(0, 0, totalSize, totalSize);
+        gradient.addColorStop(0, rosegRed);
+        gradient.addColorStop(0.5, rosegRedDark);
+        gradient.addColorStop(1, rosegGray);
+
+        // Helper: draw rounded dot
+        const drawDot = (cx: number, cy: number, r: number, color: string) => {
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.fill();
+        };
+
+        // Helper: draw rounded rect module
+        const drawRoundRect = (x: number, y: number, w: number, h: number, r: number, color: string) => {
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.roundRect(x, y, w, h, r);
+          ctx.fill();
+        };
+
+        // Check if position is in a finder pattern (7x7 at corners)
+        const isFinderArea = (row: number, col: number) => {
+          // Top-left
+          if (row < 7 && col < 7) return true;
+          // Top-right
+          if (row < 7 && col >= size - 7) return true;
+          // Bottom-left
+          if (row >= size - 7 && col < 7) return true;
+          return false;
+        };
+
+        // Draw stylized finder patterns
+        const drawFinderPattern = (startRow: number, startCol: number) => {
+          const ox = margin + startCol * scale;
+          const oy = margin + startRow * scale;
+          const outerR = scale * 3.5 - 1;
+          const midR = scale * 2.5 - 1;
+          const innerR = scale * 1.5 - 1;
+
+          // Outer ring
+          ctx.fillStyle = rosegGray;
+          ctx.beginPath();
+          ctx.roundRect(ox, oy, scale * 7, scale * 7, scale * 1.2);
+          ctx.fill();
+
+          // Middle ring
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.roundRect(ox + scale, oy + scale, scale * 5, scale * 5, scale * 0.8);
+          ctx.fill();
+
+          // Inner dot
+          ctx.fillStyle = rosegRed;
+          ctx.beginPath();
+          ctx.roundRect(ox + scale * 2, oy + scale * 2, scale * 3, scale * 3, scale * 0.6);
+          ctx.fill();
+        };
+
+        // Draw finder patterns first
+        drawFinderPattern(0, 0);
+        drawFinderPattern(0, size - 7);
+        drawFinderPattern(size - 7, 0);
+
+        // Draw data modules as rounded dots
+        const dotRadius = scale * 0.38;
+        for (let row = 0; row < size; row++) {
+          for (let col = 0; col < size; col++) {
+            if (!data[row * size + col]) continue;
+            if (isFinderArea(row, col)) continue;
+
+            const cx = margin + col * scale + scale / 2;
+            const cy = margin + row * scale + scale / 2;
+
+            // Use gradient for a branded look
+            drawDot(cx, cy, dotRadius, gradient);
+          }
         }
+
+        // Draw logo with elegant ring
+        const logo = new Image();
+        logo.crossOrigin = "anonymous";
+        logo.src = "/images/logo-optimized.png";
+        logo.onload = () => {
+          const logoSize = Math.floor(totalSize * 0.26);
+          const ringSize = logoSize + 16;
+          const lx = (totalSize - logoSize) / 2;
+          const ly = (totalSize - logoSize) / 2;
+          const rx = (totalSize - ringSize) / 2;
+          const ry = (totalSize - ringSize) / 2;
+
+          // Outer ring - white with shadow
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.15)";
+          ctx.shadowBlur = 12;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 2;
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.arc(totalSize / 2, totalSize / 2, ringSize / 2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          // Red accent ring
+          ctx.strokeStyle = rosegRed;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(totalSize / 2, totalSize / 2, ringSize / 2 - 1, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // Clip and draw logo as circle
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(totalSize / 2, totalSize / 2, logoSize / 2, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(logo, lx, ly, logoSize, logoSize);
+          ctx.restore();
+
+          setQrDataUrl(canvas.toDataURL("image/png"));
+        };
+        logo.onerror = () => {
+          setQrDataUrl(canvas.toDataURL("image/png"));
+        };
       } catch (err) {
         console.error("QR generation failed:", err);
       }
@@ -810,18 +927,23 @@ function QRCodeWithLogo({ url }: { url: string }) {
 
   if (!qrDataUrl) {
     return (
-      <div className="w-[280px] h-[280px] mx-auto bg-roseg-gray-lighter rounded-xl animate-pulse" />
+      <div className="w-[280px] h-[280px] mx-auto bg-roseg-gray-lighter rounded-2xl animate-pulse" />
     );
   }
 
   return (
-    <div className="inline-block">
+    <div className="inline-block relative group">
       <canvas ref={canvasRef} className="hidden" />
-      <img
-        src={qrDataUrl}
-        alt="Código QR Roseg Seguridad Industrial"
-        className="w-[280px] h-[280px] mx-auto rounded-xl shadow-md"
-      />
+      <div className="p-3 bg-gradient-to-br from-roseg-red/10 via-white to-roseg-gray/5 rounded-2xl shadow-lg group-hover:shadow-xl transition-shadow">
+        <img
+          src={qrDataUrl}
+          alt="Código QR Roseg Seguridad Industrial"
+          className="w-[260px] h-[260px] mx-auto"
+        />
+      </div>
+      <p className="text-xs text-roseg-gray-light mt-3 font-medium tracking-wide uppercase">
+        Roseg Seguridad Industrial
+      </p>
     </div>
   );
 }
