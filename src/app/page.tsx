@@ -256,7 +256,7 @@ export default function Home() {
             <img
               src="/images/logo-optimized.png"
               alt="Roseg Seguridad Industrial"
-              className="h-10 w-auto"
+              className="h-14 w-auto"
             />
           </a>
           <Button
@@ -284,7 +284,7 @@ export default function Home() {
             <img
               src="/images/logo-optimized.png"
               alt="Roseg Seguridad Industrial"
-              className="h-24 md:h-32 mx-auto mb-6 drop-shadow-lg"
+              className="h-32 md:h-44 mx-auto mb-6 drop-shadow-lg"
             />
             <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight">
               Seguridad Industrial
@@ -314,7 +314,7 @@ export default function Home() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white/40 text-white hover:bg-white/10 font-semibold text-base px-8 py-6 w-full sm:w-auto"
+                  className="border-2 border-white text-white hover:bg-white hover:text-roseg-gray font-bold text-base px-8 py-6 w-full sm:w-auto shadow-lg"
                 >
                   <MapPin className="w-5 h-5 mr-2" />
                   Ver ubicación
