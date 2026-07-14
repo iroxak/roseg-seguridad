@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "- Banco: BCI/Mach  \n- Tipo de cuenta: CTA. CTE. (cuenta corriente)  \n- Número de cuenta: 76502546  \n- RUT del titular: 76.132.115-3  \n- Nombre del titular: Paredes Y Baglietto LTDA.  \n- Correo: Rosegltlda@gmail.com",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1784001319,
+  "id": "202607141155061191bb969d2a4b8d",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202607141155061191bb969d2a4b8d",
+  "usage": {
+    "completion_tokens": 83,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2450,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 2533
+  }
+}
